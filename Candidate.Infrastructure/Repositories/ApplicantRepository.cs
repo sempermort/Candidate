@@ -20,6 +20,7 @@ namespace Candidate.Infrastructure.Repositories
 
         public Task AddAsync(Prospect prospect)
         {
+            prospect.Id = new Guid();
             _prosContext.Prospects.Add(prospect);
             return Task.CompletedTask;
         }

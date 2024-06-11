@@ -20,6 +20,7 @@ namespace Candidate.Infrastructure.Data
 
                 new Prospect()
                 {
+                    Id = new Guid(),
                     FirstName = "Florence",
                     LastName = "McMonies",
                     Email = "fmcmonies0@ycombinator.com",
@@ -32,6 +33,7 @@ namespace Candidate.Infrastructure.Data
                 },
                 new Prospect()
                 {
+                    Id = new Guid(),
                     FirstName = "Cornell",
                     LastName = "Brinsford",
                     Email = "cbrinsford2@hubpages.com",
@@ -44,6 +46,7 @@ namespace Candidate.Infrastructure.Data
                 },
                 new Prospect()
                 {
+                    Id = new Guid(),
                     FirstName = "Mychal",
                     LastName = "Goretti",
                     Email = "mgoretti3@pagesperso-orange.fr",
@@ -56,6 +59,7 @@ namespace Candidate.Infrastructure.Data
                 },
                 new Prospect()
                 {
+                    Id = new Guid(),
                     FirstName = "Bianka",
                     LastName = "Birchett",
                     Email = "bbirchett4@tuttocitta.it",

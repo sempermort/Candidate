@@ -19,6 +19,7 @@ namespace Candidate.Domain
         public string Comment { get; set; }
         public DateTime FromDtm { get; set; }
         public DateTime ToDtm { get; set; }
+        public Guid Id { get; set; }
 
         public Prospect() { }
         public Prospect(string firstName,

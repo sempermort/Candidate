@@ -9,9 +9,11 @@ namespace Candidate.Api
     public class ApplicantController : ControllerBase
     {
         private readonly IApplicantService _applicantService;
-        public ApplicantController(IApplicantService applicantService)
+        private readonly ApplicantValidator? _validations;
+        public ApplicantController(IApplicantService applicantService, ApplicantValidator validation)
         {
             _applicantService = applicantService;
+            _validations = validation;
         }
     
 
@@ -36,14 +38,26 @@ namespace Candidate.Api
             [HttpPost]
             public async Task<IActionResult> CreateApplicant([FromBody] ApplicantDto ApplicantItemDto)
             {
-                await _applicantService.CreateapplicantAsync(ApplicantItemDto);
+
+            var validationResult = await _validations.ValidateAsync(ApplicantItemDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            await _applicantService.CreateapplicantAsync(ApplicantItemDto);
                 return CreatedAtAction(nameof(GetApplicantByEmail), new { Email = ApplicantItemDto.Email }, ApplicantItemDto);
             }
 
             [HttpPut("{id}")]
             public async Task<IActionResult> UpdateApplicant(string email, [FromBody] ApplicantDto applicantDto )
             {
-                if (email != applicantDto.Email)
+            var validationResult = await _validations.ValidateAsync(applicantDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+            if (email != applicantDto.Email)
                 {
                     return BadRequest();
                 }
