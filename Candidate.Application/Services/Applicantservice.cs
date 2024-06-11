@@ -29,7 +29,7 @@ public class ApplicantService : IApplicantService
         });
     }
 
-    public async Task<ApplicantDto?> GetApplicantByEmailAsync(string email)
+    public async Task<ApplicantDto> GetApplicantByEmailAsync(string email)
     {
         var applicant = await _applicantRepository.GetByEmailAsync(email);
         if (applicant == null)

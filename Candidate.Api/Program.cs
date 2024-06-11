@@ -1,17 +1,29 @@
 using Candidate.Application.Services;
+using Candidate.Infrastructure.Data;
 using Candidate.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+public class Program
 {
-    builder.Services.AddControllers();
 
-    builder.Services.AddScoped <IApplicantService, ApplicantService> ();
-    builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
-}
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        {
+            builder.Services.AddControllers();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")));
 
-var app = builder.Build();
-{
-    app.UseHttpsRedirection();
-    app.MapControllers();
-    app.Run();
+            builder.Services.AddScoped<IApplicantService, ApplicantService>();
+            builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
+        }
+
+        var app = builder.Build();
+        {
+            app.UseHttpsRedirection();
+            app.MapControllers();
+            app.Run();
+        }
+    }
+ 
 }

@@ -10,8 +10,8 @@ namespace Candidate.Domain
 
     public class Prospect
     {
-        public string FirstName { get;  set; }
-        public string LastName { get;  set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public string LinkedInProfileUrl { get; set; }
@@ -20,6 +20,7 @@ namespace Candidate.Domain
         public DateTime FromDtm { get; set; }
         public DateTime ToDtm { get; set; }
 
+        public Prospect() { }
         public Prospect(string firstName,
                         string lastName,
                         string phoneNumber,
@@ -38,7 +39,7 @@ namespace Candidate.Domain
             GitHubProfileUrl = gitHubProfileUrl;
             Comment = comment;
             FromDtm = fromDtm;
-            ToDtm = toDtm;  
+            ToDtm = toDtm;
         }
 
 
