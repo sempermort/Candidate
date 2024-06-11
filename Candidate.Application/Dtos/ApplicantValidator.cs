@@ -25,9 +25,8 @@ namespace Candidate.Application.Dtos
             .NotEmpty().WithMessage("Email is Required");
 
             RuleFor(p => p.PhoneNumber)
-            .MinimumLength(10).WithMessage("PhoneNumber can not be less than 10 characters.")
-            .MaximumLength(20).WithMessage("PhoneNumber can not exceed 20 characters.")
-            .Matches(new Regex(@"((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}")).WithMessage("PhoneNumber not valid");            
+            .MinimumLength(7).WithMessage("PhoneNumber can not be less than 7 characters.")
+            .MaximumLength(20).WithMessage("PhoneNumber can not exceed 20 characters.");
 
             RuleFor(n => n.Comment)
             .NotEmpty().WithMessage("Comment  is Required");

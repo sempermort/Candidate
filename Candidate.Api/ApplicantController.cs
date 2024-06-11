@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Candidate.Api
 {
-    [Route("applicant")]
+    [Route("api/[Controller]")]
     [ApiController]
     public class ApplicantController : ControllerBase
     {
@@ -14,18 +14,17 @@ namespace Candidate.Api
         {
             _applicantService = applicantService;
             _validations = validation;
-        }
-    
+        }    
 
             [HttpGet]
-            public async Task<IActionResult> GetApplicants()
+            public async Task<IActionResult> GetAllApplicantsAsync()
             {
                 var Applicants = await _applicantService.GetApplicantsAsync();
                 return Ok(Applicants);
             }
-
-            [HttpGet("{id}")]
-            public async Task<IActionResult> GetApplicantByEmail(string email)
+        [ActionName("GetCandidateByEmail")]
+        [HttpGet("{email}")]
+            public async Task<IActionResult> GetCandidateByEmail(string email)
             {
                 var Applicant = await _applicantService.GetApplicantByEmailAsync(email);
                 if (Applicant == null)
@@ -36,7 +35,7 @@ namespace Candidate.Api
             }
 
             [HttpPost]
-            public async Task<IActionResult> CreateApplicant([FromBody] ApplicantDto ApplicantItemDto)
+            public async Task<IActionResult> CreateApplicantAsync([FromBody] ApplicantDto ApplicantItemDto)
             {
 
             var validationResult = await _validations.ValidateAsync(ApplicantItemDto);
@@ -46,11 +45,12 @@ namespace Candidate.Api
             }
 
             await _applicantService.CreateapplicantAsync(ApplicantItemDto);
-                return CreatedAtAction(nameof(GetApplicantByEmail), new { Email = ApplicantItemDto.Email }, ApplicantItemDto);
+                return  RedirectToAction(nameof(GetCandidateByEmail), new { ApplicantItemDto.Email});
             }
 
-            [HttpPut("{id}")]
-            public async Task<IActionResult> UpdateApplicant(string email, [FromBody] ApplicantDto applicantDto )
+           
+           [HttpPut("{email}")]
+            public async Task<IActionResult> UpdateApplicantAsync(string email, [FromBody] ApplicantDto applicantDto )
             {
             var validationResult = await _validations.ValidateAsync(applicantDto);
             if (!validationResult.IsValid)
@@ -66,7 +66,7 @@ namespace Candidate.Api
                 return NoContent();
             }
 
-            [HttpDelete("{id}")]
+            [HttpDelete("{email}")]
             public async Task<IActionResult> DeleteApplicantAsync(string email)
             {
             await _applicantService.DeleteApplicantAsync(email);

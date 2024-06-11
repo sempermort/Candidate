@@ -44,7 +44,9 @@ namespace Candidate.Domain
         }
 
 
-        public void UpdateProspect(string firstName,
+        public void UpdateProspect(
+            Guid id,
+            string firstName,
                         string lastName,
                         string phoneNumber,
                         string email,
@@ -54,6 +56,7 @@ namespace Candidate.Domain
                         DateTime fromDtm,
                         DateTime toDtm)
         {
+            Id = id;
             FirstName = firstName;
             LastName = lastName;
             PhoneNumber = phoneNumber;

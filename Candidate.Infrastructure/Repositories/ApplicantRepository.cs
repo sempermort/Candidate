@@ -7,7 +7,7 @@ namespace Candidate.Infrastructure.Repositories
 {
     public class ApplicantRepository:IApplicantRepository
     {
-        private readonly AppDbContext _prosContext;
+        private  AppDbContext _prosContext;
 
         public ApplicantRepository() { }
         public ApplicantRepository(AppDbContext prosContext) 
@@ -16,13 +16,16 @@ namespace Candidate.Infrastructure.Repositories
         }
         public async Task<IEnumerable<Prospect>> GetAllAsync() => await await  Task.FromResult(_prosContext.Prospects.ToListAsync());
 
-        public Task<Prospect> GetByEmailAsync(string email) => Task.FromResult(_prosContext.Prospects.FirstOrDefault(t => t.Email == email));
-
-        public Task AddAsync(Prospect prospect)
+        public Task<Prospect> GetByEmailAsync(string email)
         {
-            prospect.Id = new Guid();
+            return Task.FromResult(_prosContext.Prospects.FirstOrDefault(t => t.Email == email));
+        }
+
+        public async Task AddAsync(Prospect prospect)
+        {
+            prospect.Id = Guid.NewGuid();
             _prosContext.Prospects.Add(prospect);
-            return Task.CompletedTask;
+            await _prosContext.SaveChangesAsync();         
         }
 
         public Task UpdateAsync(Prospect prospect)
@@ -30,9 +33,10 @@ namespace Candidate.Infrastructure.Repositories
             var existing = _prosContext.Prospects.FirstOrDefault(t => t.Email == prospect.Email);
             if (existing != null)
             {
-                existing.UpdateProspect(prospect.FirstName,prospect.LastName,prospect.PhoneNumber,prospect.Email,prospect.LinkedInProfileUrl,
+                existing.UpdateProspect(prospect.Id,prospect.FirstName,prospect.LastName,prospect.PhoneNumber,prospect.Email,prospect.LinkedInProfileUrl,
                     prospect.GitHubProfileUrl,prospect.Comment,prospect.FromDtm,prospect.ToDtm);
-                
+                _prosContext.Update<Prospect>(existing);
+                _prosContext.SaveChanges();
             }
             return Task.CompletedTask;
         }
@@ -40,6 +44,7 @@ namespace Candidate.Infrastructure.Repositories
         public Task DeleteAsync(Prospect prospect)
         {
             _prosContext.Prospects.Remove(prospect);
+            _prosContext.SaveChanges(true);
             return Task.CompletedTask;
         }
     }

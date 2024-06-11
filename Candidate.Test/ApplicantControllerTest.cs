@@ -1,23 +1,53 @@
-﻿using Candidate.Domain;
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Candidate.Application.Dtos;
+using Candidate.Application.Services;
+using Candidate.Domain;
+using FakeItEasy;
+using FluentAssertions;
+using Moq;
 
-namespace Candidate.Infrastructure.Data
+namespace Candidate.Test
 {
-    public class AppDbContext : DbContext
+    public class ApplicantServiceTest
     {
+            private readonly Mock<IApplicantRepository> _applicantRepositoryMock;
+            private readonly ApplicantService _applicantService;
+        private readonly IMapper _mapper;
+        private Prospect applicant;
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
+        public ApplicantServiceTest()
+            {
+            _applicantRepositoryMock = new Mock<IApplicantRepository>();
+            _applicantService = new ApplicantService(_applicantRepositoryMock.Object);
+
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
+            _mapper = config.CreateMapper();
+
+            applicant = new Prospect()
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Bianka",
+                LastName = "Birchett",
+                Email = "bbirchett4@tuttocitta.it",
+                PhoneNumber = "973-443-2795",
+                LinkedInProfileUrl = "http://storify.com/orci/luctus/et/ultrices/posuere.jsp?et=tortor&ultrices=id&posuere=nulla&cubilia=ultrices&curae=aliquet&nulla=maecenas&dapibus=leo&dolor=odio&vel=condimentum&est=id&donec=luctus&odio=nec&justo=molestie&sollicitudin=sed&ut=justo&suscipit=pellentesque&a=viverra&feugiat=pede&et=ac&eros=diam&vestibulum=cras&ac=pellentesque&est=volutpat&lacinia=dui&nisi=maecenas&venenatis=tristique&tristique=est&fusce=et&congue=tempus&diam=semper&id=est&ornare=quam&imperdiet=pharetra&sapien=magna&urna=ac&pretium=consequat&nisl=metus&ut=sapien&volutpat=ut&sapien=nunc&arcu=vestibulum&sed=ante&augue=ipsum&aliquam=primis&erat=in&volutpat=faucibus&in=orci&congue=luctus",
+                GitHubProfileUrl = "https://simplemachines.org/mauris/laoreet/ut.xml?nunc=mauris&purus=ullamcorper&phasellus=purus&in=sit&felis=amet&donec=nulla&semper=quisque&sapien=arcu&a=libero",
+                Comment = "Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.",
+                FromDtm = new DateTime(2024, 11, 15, 13, 43, 31),
+                ToDtm = new DateTime(2024, 11, 15, 17, 43, 31)
+
+            };
         }
 
-        public DbSet<Prospect> Prospects { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
-            modelBuilder.Entity<Prospect>().HasData(
-
+            [Fact]
+            public async Task GetapplicantsAsync_ShouldReturnAllapplicants()
+            {
+                // Arrange
+                var applicants = new List<Prospect>
+            {
                 new Prospect()
                 {
                     Id = Guid.NewGuid(),
@@ -71,8 +101,95 @@ namespace Candidate.Infrastructure.Data
                     ToDtm = new DateTime(2024, 11, 15, 17, 43, 31)
 
                 }
-            );
+            };
+
+                _applicantRepositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(applicants);
+
+                // Act
+                var result = await _applicantService.GetApplicantsAsync();
+
+                // Assert
+                result.Should().HaveCount(2);
+                result.Should().Contain(t => t.FirstName == "Mcmonies");
+                result.Should().Contain(t => t.FirstName == "Cornell");
+            }
+
+        [Fact]
+        public async Task AddapplicantAsync_ShouldAddapplicant()
+        {
+            // Arrange
+            var appli = applicant;
+
+            // Act
+            await _applicantService.CreateapplicantAsync(_mapper.Map<ApplicantDto>(appli));
+
+            // Assert
+            _applicantRepositoryMock.Verify(repo => repo.AddAsync(_mapper.Map<Prospect>(appli)), Moq.Times.Once);
         }
+
+        [Fact]
+        public async Task ShouldUpdateapplicant()
+        {
+            // Arrange
+            var applicanti = applicant;
+
+            _applicantRepositoryMock.Setup(repo => repo.GetByEmailAsync(applicanti.Email)).ReturnsAsync(applicanti);
+
+            // Act
+            await _applicantService.UpdateApplicantAsync( _mapper.Map<ApplicantDto>(applicanti));
+
+            // Assert
+            applicanti.FirstName.Should().Be("Bianka");
+            _applicantRepositoryMock.Verify(repo => repo.UpdateAsync(applicanti), Moq.Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateapplicantAsync_ShouldThrowNotFoundException_WhenapplicantNotFound()
+        {
+            // Arrange
+            _applicantRepositoryMock.Setup(repo => repo.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((Prospect)null);
+
+            // Act
+            Func<Task> act = async () => await _applicantService.UpdateApplicantAsync(_mapper.Map<ApplicantDto>(applicant));
+
+            // Assert
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("applicant item with ID 1 not found.");
+            _applicantRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Prospect>()), Moq.Times.Never);
+        }
+
+
+        [Fact]
+        public async Task DeleteapplicantAsync_ShouldDeleteapplicant()
+        {
+            // Arrange
+            var applicanti = applicant;
+            _applicantRepositoryMock.Setup(repo => repo.GetByEmailAsync(applicanti.Email)).ReturnsAsync(applicant);
+
+            // Act
+            await _applicantService.DeleteApplicantAsync(applicanti.Email);
+
+            // Assert
+            _applicantRepositoryMock.Verify(repo => repo.DeleteAsync(applicant), Moq.Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteapplicantAsync_ShouldThrowNotFoundException_WhenapplicantNotFound()
+        {
+            // Arrange
+            _applicantRepositoryMock.Setup(repo => repo.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((Prospect)null);
+
+            // Act
+            Func<Task> act = async () => await _applicantService.DeleteApplicantAsync("@me.me");
+
+            // Assert
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("applicant item with ID 1 not found.");
+            _applicantRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Prospect>()), Moq.Times.Never);
+        }
+
+
+
     }
 }
 
